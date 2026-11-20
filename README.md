@@ -46,6 +46,208 @@ Modern AI clusters powered by dense GPU architectures (such as **NVIDIA GB200 NV
                ▼                                       ▼
 +-----------------------------+         +-----------------------------+
 |    CUDA Accelerated PDE     |         |    TCU Hardware Registers   |
-|   - __global__ Conduction   |         |   - 8 Architecture Specs    |
+|   - __global__ Conduction   |         |   - 8 Architecture Specs    |🔬 Core Physics & Governing Equations
+
+
+
+The solver computes thermal transient conduction across multi-layer server interfaces:
+
+
+
+
+∂T∂t=α∇2T+q˙ρcp
+∂t
+∂T
+	​
+
+=α∇
+2
+T+
+ρc
+p
+	​
+
+q
+˙
+	​
+
+	​
+
+
+
+
+
+With one-dimensional steady-state heat flux across server chassis and TIM:
+
+
+
+
+ΔT=q˙⋅Lk
+ΔT=
+k
+q
+˙
+	​
+
+⋅L
+	​
+
+
+
+
+
+
+q˙
+q
+˙
+	​
+
+: Heat flux density ($W/m^2$)
+
+
+$k$: Thermal conductivity (
+W/m⋅K
+W/m⋅K) — evaluated dynamically:
+
+
+
+Copper: 
+401 W/m⋅K
+401 W/m⋅K
+
+
+Aluminium: 
+205 W/m⋅K
+205 W/m⋅K
+
+
+Graphene heat spreader: 
+2000 W/m⋅K
+2000 W/m⋅K
+
+
+High-performance TIM: 
+8.5 W/m⋅K
+8.5 W/m⋅K
+
+
+
+
+
+
+
+
+
+
+⚙️ Hardware TCU Integration Matrix
+
+
+Family ID	Target Architecture	Max Thermal TDP	Protocol	Register Range	Clock Freq
+TCU-NV-900	Liquid-Cooled Blackwell / GB200	1200 W / compute tray	MMIO / PCIe Gen5	0x1000 - 0x1030	200 MHz
+TCU-H100-X	Hopper SXM5 Baseboard	700 W / GPU	SMBus / I3C	0x2000 - 0x2028	100 MHz
+TCU-GH200-S	Grace Hopper Superchip	900 W unified	Direct MMIO	0x3000 - 0x3040	250 MHz
+TCU-RACK-42	Cold Plate Distribution Manifold	130 kW / rack	Industrial Modbus/IP	0x4000 - 0x4050	50 MHz
+
+
+
+
+🚀 Quick Start (Local & HPC Workstation)
+
+
+1. Prerequisites
+
+
+
+
+Node.js 20+ or Bun 1.1+
+
+
+(Optional for native HPC builds): nvcc (CUDA Toolkit 12.2+), cargo (Rust 1.78+), zig 0.13.0, gcc 11+
+
+
+
+
+2. Frontend & Digital Twin Dashboard
+
+
+# Clone the repository
+git clone https://github.com/Aissamohammedi88/thermal-rack-oracle.git
+cd thermal-rack-oracle
+
+# Install dependencies and run dev server
+bun install
+bun dev
+
+
+
+
+Navigate to http://localhost:8080.
+
+
+
+3. Native Pipeline Compilation (Linux Mint / RHEL / Ubuntu)
+
+
+
+A standalone build script is included in the project under the Intégration tab:
+
+
+
+chmod +x scripts/build_and_launch.sh
+./scripts/build_and_launch.sh
+
+
+
+
+Compiles:
+
+
+
+
+
+kernel.cu via nvcc -O3 -arch=sm_90
+
+
+driver.rs via cargo build --release
+
+
+tcu_mmio.zig via zig build-lib -dynamic
+
+
+tcu_ffi.c via gcc -O3 -shared
+
+
+
+
+
+
+🧪 Testing & Validation
+
+
+# Run unit and physics integration test suites
+bun test
+# or with vitest
+bunx vitest run
+
+
+
+
+Validates:
+
+
+
+
+
+Thermal delta conduction formulas across material boundaries.
+
+
+CRC32 polynomial framing for TCU command validation.
+
+
+Rejection of deliberately corrupted sensor payloads.
+
+
+
+
 |   - nvcc FP32 / FP16 solver |         |   - Base 0x1000 - 0x1030    |
 +-----------------------------+         +-----------------------------+
